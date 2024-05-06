@@ -1,0 +1,22 @@
+body{
+    overflow-x: hidden;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.App{
+    background-color: #1b081d;
+    min-height: 100vh;
+    display: flex;
+    /* color: white; */
+    width: 100%;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-reveal {
+    display: none !important;
+}
