@@ -1,6 +1,8 @@
 import express from "express"
-import { chats } from "./data.js"
 import cors from "cors"
+import cookieParser from "cookie-parser"
+import userRouter from "./Routes/User.routes.js"
+
 const app = express()
 
 app.use(cors({
@@ -8,17 +10,14 @@ app.use(cors({
     credentials:true
 }))
 
-app.get("/",(req,res)=>{
-    res.send("Api Server is Running!")
-})
+app.use(express.json({limit:"16kb"}))
 
-app.get("/api/v1/chat",(req,res)=>{
-    res.send(chats)
-})
+app.use(express.urlencoded({extended:true,limit:"16kb"}))
 
-app.get("/api/v1/chat/:id",(req,res)=>{
-    const singleChat = chats.find(chat => chat._id === req.params.id) || "No Chats found!"
-    res.send(singleChat)
-})
+app.use(cookieParser())
+
+app.use("/api/v1/user",userRouter)
+
+
 
 export {app}

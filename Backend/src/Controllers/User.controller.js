@@ -1,0 +1,115 @@
+import {ApiError,ApiResponse,asyncHandler,generateTokens} from "../Utils/index.js"
+import User from "../models/User.model.js"
+import jwt from "jsonwebtoken"
+
+const signup = asyncHandler(async (req,res) => {
+
+    const {name,email,password} = req.body
+
+    if(!name || !email || !password){
+        throw new ApiError(400,"All fields are required!")
+    }
+
+    const existingEmail = await User.findOne({email})
+
+    if(existingEmail){
+        throw new ApiError(400,"User with same email already exists!")
+    }
+    
+    const user = await User.create({
+        name,
+        email,
+        password
+    })
+
+    if(!user){
+        throw new ApiError(500,"Something went wrong while creating User Account!")
+    }
+    return res.status(200).json(
+        new ApiResponse(200,{id:user._id,name:user.name,email:user.email},"User created Successfully!")
+    )
+})
+
+const signin = asyncHandler(async (req,res) => {
+
+    const {email,password} = req.body
+
+    if(!email || !password){
+        throw new ApiError(400,"All fields are required!")
+    }
+
+    const user = await User.findOne({email})
+
+    if(!user){
+        throw new ApiError(400,"Invalid email!")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(400,"Invalid Password!")
+    }
+
+    const {accessToken,refreshToken} = await generateTokens(user._id)
+
+    const cookieOptions = {
+        httpOnly:true,
+        secure:true
+    }
+
+    return res.status(200)
+    .cookie("accessToken",accessToken,cookieOptions)
+    .cookie("refreshToken",refreshToken,cookieOptions)
+    .json(
+        new ApiResponse(200,
+            {accessToken,refreshToken},
+            "User Logged in Successfully!"
+        )
+    )
+})
+
+const refreshAccessToken = asyncHandler(async (req,res) => {
+    const userRefreshToken  = req.cookies.refreshToken || req.body.refreshToken
+
+    if(!userRefreshToken){
+        throw new ApiError(400,"Unauthorized request!")
+    }
+
+    let decodedToken = ""
+
+    try{
+        decodedToken = jwt.verify(userRefreshToken,process.env.REFRESH_TOKEN_SECRET)
+    }
+    catch(error){
+        throw new ApiError(400,"Invalid refresh token!")
+    }
+
+    const user = await User.findById(decodedToken._id)
+
+    if(!user){
+        throw new ApiError(400,"Invalid refresh Token!")
+    }
+    if(userRefreshToken !== user?.refreshToken){
+        throw new ApiError(400,"Invalid refresh Token")
+    }
+
+    const cookieOptions = {
+        httpOnly:true,
+        secure:true,
+    }
+
+    const {accessToken,refreshToken} = await generateTokens(user._id)
+
+
+    return res.status(200)
+    .cookie("accessToken",refreshToken,cookieOptions)
+    .cookie("refreshToken",refreshToken,cookieOptions)
+    .json(
+        new ApiResponse(200,
+            {accessToken,refreshToken},
+            "Access token refreshed!"
+        )
+    )
+})
+
+export {signin,signup,refreshAccessToken}
