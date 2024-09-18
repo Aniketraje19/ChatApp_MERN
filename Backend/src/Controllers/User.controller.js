@@ -62,7 +62,7 @@ const signin = asyncHandler(async (req,res) => {
     .cookie("refreshToken",refreshToken,cookieOptions)
     .json(
         new ApiResponse(200,
-            {accessToken,refreshToken},
+            {accessToken,user:{id:user._id,name:user.name,email:user.email,profile:user.profilePic}},
             "User Logged in Successfully!"
         )
     )
@@ -102,14 +102,34 @@ const refreshAccessToken = asyncHandler(async (req,res) => {
 
 
     return res.status(200)
-    .cookie("accessToken",refreshToken,cookieOptions)
+    .cookie("accessToken",accessToken,cookieOptions)
     .cookie("refreshToken",refreshToken,cookieOptions)
     .json(
         new ApiResponse(200,
-            {accessToken,refreshToken},
+            {accessToken},
             "Access token refreshed!"
         )
     )
 })
 
-export {signin,signup,refreshAccessToken}
+const logout = asyncHandler(async (req,res) => {
+    console.log("logout hit")
+    const cookieOptions = {
+        httpOnly:true,
+        secure:true,
+        expires: new Date(0),
+        path: '/'
+    }
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    return res.status(200)
+    .json(
+        new ApiResponse(200,
+            "User logged out Successully!"
+        )
+    )
+})
+
+export {signin,signup,refreshAccessToken,logout}

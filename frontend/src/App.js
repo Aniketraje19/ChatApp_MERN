@@ -1,5 +1,6 @@
 import {RouterProvider,createBrowserRouter} from "react-router-dom"
-import {Chats,Home} from "./pages/index.js"
+import {Chats,Home,AuthPage} from "./pages/index.js"
+import { ProtectedRoute } from "./components/ProtectedRoute.jsx"
 import "./App.css"
 const router = createBrowserRouter([
   {
@@ -9,7 +10,11 @@ const router = createBrowserRouter([
   },
   {
     path:"/chats",
-    element:<Chats/>
+    element:<ProtectedRoute children={<Chats/>} />
+  },
+  {
+    path:"/auth",
+    element:<AuthPage/>
   }
 ])
 

@@ -60,7 +60,7 @@ userSchema.methods.generateAccessToken = function(){
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn:"1d"
+            expiresIn:"30m"
         }
     )
 }

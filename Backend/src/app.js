@@ -2,13 +2,13 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import userRouter from "./Routes/User.routes.js"
-import { notFound } from "./Middlewares/errors.middleware.js"
+import { errorMiddleware, notFound } from "./Middlewares/errors.middleware.js"
 
 const app = express()
 
 app.use(cors({
-    origin:"*",
-    credentials:true
+    origin:"http://localhost:3000",
+    credentials: true,
 }))
 
 app.use(express.json({limit:"16kb"}))
@@ -23,7 +23,9 @@ app.all("/",(req,res)=>{
 
 app.use("/api/v1/user",userRouter)
 
+app.use(errorMiddleware)
 app.use(notFound)
+
 
 
 export {app}

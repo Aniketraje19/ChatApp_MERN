@@ -6,4 +6,23 @@ const notFound = (req,res,next) => {
     next(error)
 }
 
-export {notFound}
+const errorMiddleware = (err, req, res, next) => {
+    if (err instanceof ApiError) {
+      res.status(err.statusCode).json({
+        statusCode: err.statusCode,
+        message: err.message,
+        success: err.success,
+        errors: err.errors,
+        stack: process.env.DEBUG === 'TRUE' ? err.stack : undefined,
+      });
+    } else {
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Internal Server Error',
+        success: false,
+        errors: [],
+      });
+    }
+  };
+
+export {notFound,errorMiddleware}

@@ -1,10 +1,13 @@
 
-import { useState } from "react"
-
+import { useEffect, useState } from "react"
+import { sigin} from "../Api/auth.api.js"
+import { useAuth } from "../Context/Auth.context.js"
+import {useNavigate} from "react-router-dom"
 import { FormControl, FormLabel, VStack, Input, InputRightElement, Button, InputGroup } from "@chakra-ui/react"
 import { useToast } from '@chakra-ui/react'
 
 const SignIn = () => {
+
 
 
     const [formDetails, setFormDetails] = useState({
@@ -12,22 +15,31 @@ const SignIn = () => {
         password: ""
     })
 
+    const navigate = useNavigate()
+
+    const {login} = useAuth()
+
+    
+
     const [showPassword, setShowPassword] = useState(false)
-    const [isFormSubmitting,setIsFormSubmitting] = useState(false)
+    const [isFormSubmitting, setIsFormSubmitting] = useState(false)
 
     const toast = useToast()
 
     const handleSubmit = async () => {
-        setIsFormSubmitting(true)
+
+
         if (!formDetails.email) {
             toast({
                 title: "Email is Required!",
                 status: "error",
                 isClosable: true,
                 position: "top",
-                duration:1500,
+                duration: 1500,
             })
-            
+
+            return
+
         }
         if (!formDetails.password) {
             toast({
@@ -35,17 +47,51 @@ const SignIn = () => {
                 status: "error",
                 isClosable: true,
                 position: "top",
-                duration:1500,
+                duration: 1500,
             })
-            
+            return
+
         }
+
+        setIsFormSubmitting(true)
+
+        try {
+
+            const data = await sigin(formDetails.email, formDetails.password)
+            if (!data) throw Error("Something went Wrong!")
+            login(data.data.user,data.data.accessToken)
+            toast({
+                title: data.message,
+                status: data.success ? "success" : "error",
+                isClosable: true,
+                position: "top",
+                duration: 1500,
+            })
+
+            setFormDetails({
+                email: "",
+                password: "",
+            })
+
+        } catch (error) {
+            toast({
+                title: error.message,
+                status: "error",
+                isClosable: true,
+                position: "top",
+                duration: 1500,
+            })
+
+        }
+
         setIsFormSubmitting(false)
+        navigate("/chats")
     }
-    
+
     return (
         <>
             <VStack w="100%" h="100%">
-                <FormControl id="email" isRequired display="flex" flexDirection="column" justifyContent="center" alignItems="flex-start">
+                <FormControl id="email_" isRequired display="flex" flexDirection="column" justifyContent="center" alignItems="flex-start">
                     <FormLabel>Email:</FormLabel>
                     <Input
                         type="email"
@@ -58,7 +104,7 @@ const SignIn = () => {
                         onChange={e => setFormDetails(prev => ({ ...prev, email: e.target.value }))}
                     />
                 </FormControl>
-                <FormControl id="password" isRequired display="flex" flexDirection="column" justifyContent="center" alignItems="flex-start">
+                <FormControl id="password_" isRequired display="flex" flexDirection="column" justifyContent="center" alignItems="flex-start">
                     <FormLabel>Password:</FormLabel>
                     <InputGroup>
                         <Input
@@ -87,7 +133,7 @@ const SignIn = () => {
                     onClick={handleSubmit}
                     isLoading={isFormSubmitting}
                 >
-                    Login
+                    Sign In
                 </Button>
             </VStack>
         </>

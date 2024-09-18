@@ -1,11 +1,11 @@
+import { useEffect } from "react"
 
+import { useAuth } from "../Context/Auth.context"
 
 const Chats = () => {
 
-    console.log(process.env.REACT_APP_BACKEND_URI)
-
     return (
-        <h1>Chats</h1>
+        <h1 style={{color:"white"}}>Chats</h1>
     )
 }
 

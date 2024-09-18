@@ -1,34 +1,34 @@
 
 import { useState } from "react"
-
+import axios from "axios"
+import { API_URL } from "../utils/config.js"
 import { FormControl, FormLabel, VStack, Input, InputRightElement, Button, InputGroup } from "@chakra-ui/react"
 import { useToast } from '@chakra-ui/react'
 
 const SignUp = () => {
 
-
     const [formDetails, setFormDetails] = useState({
-        name:"",
+        name: "",
         email: "",
         password: "",
-        confirmPassword:"",
+        confirmPassword: "",
     })
 
     const [showPassword, setShowPassword] = useState(false)
-    const [isFormSubmitting,setIsFormSubmitting] = useState(false)
+    const [isFormSubmitting, setIsFormSubmitting] = useState(false)
 
     const toast = useToast()
 
     const handleSubmit = async () => {
-        setIsFormSubmitting(true)
         if (!formDetails.email || !formDetails.name || !formDetails.password || !formDetails.confirmPassword) {
             toast({
                 title: "All Fields are Required!",
                 status: "error",
                 isClosable: true,
                 position: "top",
-                duration:1500,
+                duration: 1500,
             })
+            return;
         }
         if (formDetails.password !== formDetails.confirmPassword) {
             toast({
@@ -36,14 +36,55 @@ const SignUp = () => {
                 status: "error",
                 isClosable: true,
                 position: "top",
+                duration: 1500,
+            })
+            return;
+        }
+        setIsFormSubmitting(true)
+
+        try {
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+
+            const {data} = await axios.post(
+                `${API_URL}/user/signup`,
+                {name:formDetails.name,email:formDetails.email,password:formDetails.password},
+                config
+            )
+
+            toast({
+                title:data.message,
+                status:data.success ? "success" : "error",
+                isClosable:true,
+                position:"top",
                 duration:1500,
             })
+
+            setFormDetails({
+                name: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+            })
+
+        } catch (error) {
+            toast({
+                title:error.response.data.message,
+                status:"error",
+                isClosable:true,
+                position:"top",
+                duration:1500,
+            })
+
         }
-            
         
+
         setIsFormSubmitting(false)
     }
-    
+
     return (
         <>
             <VStack w="100%" h="100%">
@@ -124,7 +165,7 @@ const SignUp = () => {
                     onClick={handleSubmit}
                     isLoading={isFormSubmitting}
                 >
-                    Login
+                    Sign Up
                 </Button>
             </VStack>
         </>
